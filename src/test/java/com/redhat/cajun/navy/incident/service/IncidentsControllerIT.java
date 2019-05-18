@@ -30,7 +30,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.kafka.config.KafkaListenerContainerFactory;
+import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.listener.ConcurrentMessageListenerContainer;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.concurrent.ListenableFuture;
@@ -45,6 +49,15 @@ public class IncidentsControllerIT {
 
     @MockBean
     private UpdateIncidentCommandListener updateIncidentCommandListener;
+
+    @MockBean
+    private ProducerFactory<String, Message<?>> producerFactory;
+
+    @MockBean
+    private ConsumerFactory<String, String> consumerFactory;
+
+    @MockBean
+    private KafkaListenerContainerFactory<ConcurrentMessageListenerContainer<String, String>> kafkaListenerContainerFactory;
 
     @Autowired
     private KafkaTemplate<String, Message<?>> kafkaTemplate;
