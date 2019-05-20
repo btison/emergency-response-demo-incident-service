@@ -38,8 +38,10 @@ public class KafkaConfiguration {
         configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, properties.getProducer().getKeySerializer());
         configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, properties.getProducer().getValueSerializer());
         configProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
+        configProps.put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, properties.getSsl().getKeyStoreType());
         configProps.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, toAbsolutePath(properties.getSsl().getKeyStoreLocation()));
         configProps.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, properties.getSsl().getKeyStorePassword());
+        configProps.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, properties.getSsl().getTrustStoreType());
         configProps.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, toAbsolutePath(properties.getSsl().getTrustStoreLocation()));
         configProps.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, properties.getSsl().getTrustStorePassword());
         return new DefaultKafkaProducerFactory<>(configProps);
@@ -59,8 +61,10 @@ public class KafkaConfiguration {
         configProps.put(ConsumerConfig.GROUP_ID_CONFIG, properties.getConsumer().getGroupId());
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, properties.getConsumer().getEnableAutoCommit());
         configProps.put(CommonClientConfigs.SECURITY_PROTOCOL_CONFIG, "SSL");
+        configProps.put(SslConfigs.SSL_KEYSTORE_TYPE_CONFIG, properties.getSsl().getKeyStoreType());
         configProps.put(SslConfigs.SSL_KEYSTORE_LOCATION_CONFIG, toAbsolutePath(properties.getSsl().getKeyStoreLocation()));
         configProps.put(SslConfigs.SSL_KEYSTORE_PASSWORD_CONFIG, properties.getSsl().getKeyStorePassword());
+        configProps.put(SslConfigs.SSL_TRUSTSTORE_TYPE_CONFIG, properties.getSsl().getTrustStoreType());
         configProps.put(SslConfigs.SSL_TRUSTSTORE_LOCATION_CONFIG, toAbsolutePath(properties.getSsl().getTrustStoreLocation()));
         configProps.put(SslConfigs.SSL_TRUSTSTORE_PASSWORD_CONFIG, properties.getSsl().getTrustStorePassword());
         return new DefaultKafkaConsumerFactory<>(configProps);
