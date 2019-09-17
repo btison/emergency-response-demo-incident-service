@@ -72,8 +72,8 @@ public class IncidentsControllerIT {
     public void testReportIncident() throws Exception {
 
         String reportedIncident = "{" +
-                "\"lat\": \"34.14338\"," +
-                "\"lon\": \"-77.86569\"," +
+                "\"lat\": \"34.143381234\"," +
+                "\"lon\": \"-77.865691234\"," +
                 "\"numberOfPeople\": 3," +
                 "\"medicalNeeded\": true," +
                 "\"victimName\": \"victim\"," +

@@ -1,6 +1,7 @@
 package com.redhat.cajun.navy.incident.service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -8,8 +9,8 @@ import java.util.stream.Collectors;
 import com.redhat.cajun.navy.incident.dao.IncidentDao;
 import com.redhat.cajun.navy.incident.message.IncidentReportedEvent;
 import com.redhat.cajun.navy.incident.message.Message;
-import com.redhat.cajun.navy.incident.model.IncidentStatus;
 import com.redhat.cajun.navy.incident.model.Incident;
+import com.redhat.cajun.navy.incident.model.IncidentStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -104,8 +105,8 @@ public class IncidentService {
 
         return new com.redhat.cajun.navy.incident.entity.Incident.Builder()
                 .incidentId(incidentId)
-                .latitude(incident.getLat())
-                .longitude(incident.getLon())
+                .latitude(round(incident.getLat(), 5))
+                .longitude(round(incident.getLon(), 5))
                 .medicalNeeded(incident.isMedicalNeeded())
                 .numberOfPeople(incident.getNumberOfPeople())
                 .victimName(incident.getVictimName())
@@ -113,6 +114,14 @@ public class IncidentService {
                 .reportedTime(reportedTimestamp)
                 .status(IncidentStatus.REPORTED.name())
                 .build();
+    }
+
+    private String round(String value, int places) {
+        if (places < 0) throw new IllegalArgumentException();
+
+        BigDecimal bd = new BigDecimal(value);
+        bd = bd.setScale(places, RoundingMode.HALF_UP);
+        return bd.toString();
     }
 
     private com.redhat.cajun.navy.incident.entity.Incident toEntity(Incident incident, com.redhat.cajun.navy.incident.entity.Incident current) {

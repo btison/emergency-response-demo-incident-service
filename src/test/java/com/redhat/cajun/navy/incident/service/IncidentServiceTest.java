@@ -66,8 +66,8 @@ public class IncidentServiceTest {
     public void testCreateIncident() {
 
         Incident incident = new Incident.Builder()
-                .lat("30.12345")
-                .lon("-70.98765")
+                .lat("30.123456789")
+                .lon("-70.987656789")
                 .numberOfPeople(2)
                 .medicalNeeded(false)
                 .victimName("John Doe")
@@ -86,8 +86,8 @@ public class IncidentServiceTest {
         com.redhat.cajun.navy.incident.entity.Incident entity = entityCaptor.getValue();
         String incidentId = entity.getIncidentId();
         assertThat(incidentId, notNullValue());
-        assertThat(entity.getLatitude(), equalTo(incident.getLat()));
-        assertThat(entity.getLongitude(), equalTo(incident.getLon()));
+        assertThat(entity.getLatitude(), equalTo("30.12346"));
+        assertThat(entity.getLongitude(), equalTo("-70.98766"));
         assertThat(entity.getNumberOfPeople(), equalTo(incident.getNumberOfPeople()));
         assertThat(entity.isMedicalNeeded(), equalTo(incident.isMedicalNeeded()));
         assertThat(entity.getVictimName(), equalTo(incident.getVictimName()));
