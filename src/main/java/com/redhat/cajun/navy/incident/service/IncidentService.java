@@ -2,14 +2,16 @@ package com.redhat.cajun.navy.incident.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.redhat.cajun.navy.incident.dao.IncidentDao;
 import com.redhat.cajun.navy.incident.message.IncidentReportedEvent;
 import com.redhat.cajun.navy.incident.message.Message;
-import com.redhat.cajun.navy.incident.model.IncidentStatus;
 import com.redhat.cajun.navy.incident.model.Incident;
+import com.redhat.cajun.navy.incident.model.IncidentStatus;
+import io.opentracing.Tracer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,6 +31,9 @@ public class IncidentService {
     private KafkaTemplate<String, Message<?>> kafkaTemplate;
 
     @Autowired
+    private Tracer tracer;
+
+    @Autowired
     private IncidentDao incidentDao;
 
     @Value("${sender.destination.incident-reported-event}")
@@ -38,6 +43,9 @@ public class IncidentService {
     public Incident create(Incident incident) {
 
         com.redhat.cajun.navy.incident.entity.Incident created = incidentDao.create(toEntity(incident));
+
+        // add incident id to current tracing span
+        Optional.of(tracer.activeSpan()).ifPresent(s -> s.setTag("incidentId", created.getIncidentId()));
 
         Message<IncidentReportedEvent> message = new Message.Builder<>("IncidentReportedEvent", "IncidentService",
                 new IncidentReportedEvent.Builder(created.getIncidentId())

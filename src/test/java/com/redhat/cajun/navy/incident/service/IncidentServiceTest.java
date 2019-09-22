@@ -25,6 +25,8 @@ import com.redhat.cajun.navy.incident.message.IncidentReportedEvent;
 import com.redhat.cajun.navy.incident.message.Message;
 import com.redhat.cajun.navy.incident.model.Incident;
 import com.redhat.cajun.navy.incident.model.IncidentStatus;
+import io.opentracing.Span;
+import io.opentracing.Tracer;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -42,6 +44,12 @@ public class IncidentServiceTest {
     @Mock
     private IncidentDao incidentDao;
 
+    @Mock
+    private Tracer tracer;
+
+    @Mock
+    private Span span;
+
     @Captor
     private ArgumentCaptor<com.redhat.cajun.navy.incident.entity.Incident> entityCaptor;
 
@@ -57,9 +65,11 @@ public class IncidentServiceTest {
         service = new IncidentService();
         setField(service, null, kafkaTemplate, KafkaTemplate.class);
         setField(service, null, incidentDao, IncidentDao.class);
+        setField(service, null, tracer, Tracer.class);
         setField(service, "destination", "test-topic", String.class);
         ListenableFuture future = mock(ListenableFuture.class);
         when(kafkaTemplate.send(anyString(), anyString(), any())).thenReturn(future);
+        when(tracer.activeSpan()).thenReturn(span);
     }
 
     @Test
@@ -108,6 +118,8 @@ public class IncidentServiceTest {
         assertThat(event.getNumberOfPeople(), equalTo(incident.getNumberOfPeople()));
         assertThat(event.isMedicalNeeded(), equalTo(incident.isMedicalNeeded()));
         assertThat(event.getTimestamp(), equalTo(entity.getTimestamp()));
+
+        verify(span).setTag("incidentId", entity.getIncidentId());
     }
 
     @Test
