@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.redhat.cajun.navy.incident.message.Message;
 import io.opentracing.Tracer;
+import io.opentracing.contrib.kafka.spring.TracingConsumerFactory;
 import io.opentracing.contrib.kafka.spring.TracingProducerFactory;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.producer.ProducerConfig;
@@ -64,7 +65,7 @@ public class KafkaConfiguration {
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.GROUP_ID_CONFIG, groupId);
         configProps.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
-        return new DefaultKafkaConsumerFactory<>(configProps);
+        return new TracingConsumerFactory<>(new DefaultKafkaConsumerFactory<>(configProps));
     }
 
     @Bean
