@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.redhat.cajun.navy.incident.dao.IncidentDao;
+import com.redhat.cajun.navy.incident.dao.OutboxEventEmitter;
 import com.redhat.cajun.navy.incident.message.IncidentReportedEvent;
 import com.redhat.cajun.navy.incident.message.Message;
 import com.redhat.cajun.navy.incident.model.Incident;
@@ -42,6 +43,9 @@ public class IncidentServiceTest {
     @Mock
     private IncidentDao incidentDao;
 
+    @Mock
+    private OutboxEventEmitter outboxEventEmitter;
+
     @Captor
     private ArgumentCaptor<com.redhat.cajun.navy.incident.entity.Incident> entityCaptor;
 
@@ -57,6 +61,7 @@ public class IncidentServiceTest {
         service = new IncidentService();
         setField(service, null, kafkaTemplate, KafkaTemplate.class);
         setField(service, null, incidentDao, IncidentDao.class);
+        setField(service, null, outboxEventEmitter, OutboxEventEmitter.class);
         setField(service, "destination", "test-topic", String.class);
         ListenableFuture future = mock(ListenableFuture.class);
         when(kafkaTemplate.send(anyString(), anyString(), any())).thenReturn(future);

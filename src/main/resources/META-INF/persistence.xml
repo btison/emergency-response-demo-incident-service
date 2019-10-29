@@ -9,6 +9,7 @@
 
     <!-- Incident entity -->
     <class>com.redhat.cajun.navy.incident.entity.Incident</class>
+    <class>com.redhat.cajun.navy.incident.entity.OutboxEvent</class>
 
   </persistence-unit>
 

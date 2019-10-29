@@ -5,11 +5,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.cajun.navy.incident.dao.IncidentDao;
+import com.redhat.cajun.navy.incident.dao.OutboxEventEmitter;
+import com.redhat.cajun.navy.incident.entity.OutboxEvent;
 import com.redhat.cajun.navy.incident.message.IncidentReportedEvent;
 import com.redhat.cajun.navy.incident.message.Message;
-import com.redhat.cajun.navy.incident.model.IncidentStatus;
 import com.redhat.cajun.navy.incident.model.Incident;
+import com.redhat.cajun.navy.incident.model.IncidentStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +34,9 @@ public class IncidentService {
     @Autowired
     private IncidentDao incidentDao;
 
+    @Autowired
+    private OutboxEventEmitter outboxEventEmitter;
+
     @Value("${sender.destination.incident-reported-event}")
     private String destination;
 
@@ -48,6 +54,9 @@ public class IncidentService {
                         .timestamp(created.getTimestamp())
                         .build())
                 .build();
+
+        OutboxEvent outboxEvent = new OutboxEvent("Incident", created.getIncidentId(), "IncidentReportedEvent", new ObjectMapper().valueToTree(message));
+        outboxEventEmitter.emitEvent(outboxEvent);
 
         ListenableFuture<SendResult<String, Message<?>>> future = kafkaTemplate.send(destination, message.getBody().getId(), message);
         future.addCallback(
