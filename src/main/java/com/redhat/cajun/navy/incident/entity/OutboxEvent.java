@@ -5,15 +5,12 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
+import javax.persistence.Lob;
 import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.vladmihalcea.hibernate.type.json.JsonNodeBinaryType;
 import org.hibernate.annotations.Type;
-import org.hibernate.annotations.TypeDef;
 
-@TypeDef(name = "jsonb", typeClass = JsonNodeBinaryType.class)
 @Entity
 @Table(name = "incident_outbox")
 public class OutboxEvent {
@@ -33,15 +30,15 @@ public class OutboxEvent {
     @NotNull
     private String type;
 
-    @Type(type = "jsonb")
-    @Column(columnDefinition = "jsonb")
+    @Lob
+    @Type(type = "org.hibernate.type.TextType")
     @NotNull
-    private JsonNode payload;
+    private String payload;
 
     OutboxEvent() {
     }
 
-    public OutboxEvent(String aggregateType, String aggregateId, String type, JsonNode payload) {
+    public OutboxEvent(String aggregateType, String aggregateId, String type, String payload) {
         this.aggregateType = aggregateType;
         this.aggregateId = aggregateId;
         this.type = type;
@@ -80,11 +77,11 @@ public class OutboxEvent {
         this.aggregateType = aggregateType;
     }
 
-    public JsonNode getPayload() {
+    public String getPayload() {
         return payload;
     }
 
-    public void setPayload(JsonNode payload) {
+    public void setPayload(String payload) {
         this.payload = payload;
     }
 }

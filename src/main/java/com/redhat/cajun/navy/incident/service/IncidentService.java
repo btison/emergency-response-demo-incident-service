@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.redhat.cajun.navy.incident.dao.IncidentDao;
 import com.redhat.cajun.navy.incident.dao.OutboxEventEmitter;
@@ -45,7 +46,12 @@ public class IncidentService {
                         .build())
                 .build();
 
-        OutboxEvent outboxEvent = new OutboxEvent("Incident", created.getIncidentId(), "IncidentReportedEvent", new ObjectMapper().valueToTree(message));
+        OutboxEvent outboxEvent = null;
+        try {
+            outboxEvent = new OutboxEvent("Incident", created.getIncidentId(), "IncidentReportedEvent", new ObjectMapper().writeValueAsString(message));
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
         outboxEventEmitter.emitEvent(outboxEvent);
 
         return fromEntity(created);

@@ -1,6 +1,7 @@
 package com.redhat.cajun.navy.incident.service;
 
 import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -20,8 +21,7 @@ import java.util.List;
 
 import com.redhat.cajun.navy.incident.dao.IncidentDao;
 import com.redhat.cajun.navy.incident.dao.OutboxEventEmitter;
-import com.redhat.cajun.navy.incident.message.IncidentReportedEvent;
-import com.redhat.cajun.navy.incident.message.Message;
+import com.redhat.cajun.navy.incident.entity.OutboxEvent;
 import com.redhat.cajun.navy.incident.model.Incident;
 import com.redhat.cajun.navy.incident.model.IncidentStatus;
 import org.junit.Before;
@@ -44,7 +44,7 @@ public class IncidentServiceTest {
     private ArgumentCaptor<com.redhat.cajun.navy.incident.entity.Incident> entityCaptor;
 
     @Captor
-    private ArgumentCaptor<Message<IncidentReportedEvent>> messageCaptor;
+    private ArgumentCaptor<OutboxEvent> outboxEventCaptor;
 
     private IncidentService service;
 
@@ -90,6 +90,14 @@ public class IncidentServiceTest {
         assertThat(entity.getVictimPhoneNumber(), equalTo(incident.getVictimPhoneNumber()));
         assertThat(entity.getTimestamp() <= System.currentTimeMillis(), is(true));
         assertThat(entity.getStatus(), equalTo(IncidentStatus.REPORTED.name()));
+
+        verify(outboxEventEmitter).emitEvent(outboxEventCaptor.capture());
+        OutboxEvent event = outboxEventCaptor.getValue();
+        assertThat(event, notNullValue());
+        assertThat(event.getAggregateType(), equalTo("Incident"));
+        assertThat(event.getAggregateId(), equalTo(incidentId));
+        assertThat(event.getType(), equalTo("IncidentReportedEvent"));
+        assertThat(event.getPayload(), containsString(incidentId));
     }
 
     @Test
