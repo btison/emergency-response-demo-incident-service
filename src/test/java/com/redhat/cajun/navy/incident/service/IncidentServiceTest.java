@@ -7,7 +7,6 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -15,7 +14,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 import static org.springframework.test.util.ReflectionTestUtils.setField;
 
-import java.math.BigDecimal;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -32,13 +30,9 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.stubbing.Answer;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.util.concurrent.ListenableFuture;
 
 public class IncidentServiceTest {
-
-    @Mock
-    private KafkaTemplate<String, Message<?>> kafkaTemplate;
 
     @Mock
     private IncidentDao incidentDao;
@@ -59,12 +53,9 @@ public class IncidentServiceTest {
     public void init() {
         initMocks(this);
         service = new IncidentService();
-        setField(service, null, kafkaTemplate, KafkaTemplate.class);
         setField(service, null, incidentDao, IncidentDao.class);
         setField(service, null, outboxEventEmitter, OutboxEventEmitter.class);
-        setField(service, "destination", "test-topic", String.class);
         ListenableFuture future = mock(ListenableFuture.class);
-        when(kafkaTemplate.send(anyString(), anyString(), any())).thenReturn(future);
     }
 
     @Test
@@ -99,20 +90,6 @@ public class IncidentServiceTest {
         assertThat(entity.getVictimPhoneNumber(), equalTo(incident.getVictimPhoneNumber()));
         assertThat(entity.getTimestamp() <= System.currentTimeMillis(), is(true));
         assertThat(entity.getStatus(), equalTo(IncidentStatus.REPORTED.name()));
-
-        verify(kafkaTemplate).send(eq("test-topic"), eq(incidentId), messageCaptor.capture());
-        Message<IncidentReportedEvent> message = messageCaptor.getValue();
-        assertThat(message.getId(), notNullValue());
-        assertThat(message.getInvokingService(), equalTo("IncidentService"));
-        assertThat(message.getBody(), notNullValue());
-        IncidentReportedEvent event = message.getBody();
-        assertThat(event.getId(), notNullValue());
-        assertThat(event.getId(), equalTo(incidentId));
-        assertThat(event.getLat(), equalTo(new BigDecimal(incident.getLat())));
-        assertThat(event.getLon(), equalTo(new BigDecimal(incident.getLon())));
-        assertThat(event.getNumberOfPeople(), equalTo(incident.getNumberOfPeople()));
-        assertThat(event.isMedicalNeeded(), equalTo(incident.isMedicalNeeded()));
-        assertThat(event.getTimestamp(), equalTo(entity.getTimestamp()));
     }
 
     @Test

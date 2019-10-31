@@ -16,12 +16,8 @@ import com.redhat.cajun.navy.incident.model.IncidentStatus;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.concurrent.ListenableFuture;
 
 @Service
 public class IncidentService {
@@ -29,16 +25,10 @@ public class IncidentService {
     private static final Logger log = LoggerFactory.getLogger(IncidentService.class);
 
     @Autowired
-    private KafkaTemplate<String, Message<?>> kafkaTemplate;
-
-    @Autowired
     private IncidentDao incidentDao;
 
     @Autowired
     private OutboxEventEmitter outboxEventEmitter;
-
-    @Value("${sender.destination.incident-reported-event}")
-    private String destination;
 
     @Transactional
     public Incident create(Incident incident) {
@@ -57,11 +47,6 @@ public class IncidentService {
 
         OutboxEvent outboxEvent = new OutboxEvent("Incident", created.getIncidentId(), "IncidentReportedEvent", new ObjectMapper().valueToTree(message));
         outboxEventEmitter.emitEvent(outboxEvent);
-
-        ListenableFuture<SendResult<String, Message<?>>> future = kafkaTemplate.send(destination, message.getBody().getId(), message);
-        future.addCallback(
-                result -> log.debug("Sent 'IncidentReportedEvent' message for incident " + message.getBody().getId()),
-                ex -> log.error("Error sending 'IncidentReportedEvent' message for incident " + message.getBody().getId(), ex));
 
         return fromEntity(created);
     }
